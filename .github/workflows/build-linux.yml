@@ -1,0 +1,78 @@
+name: Linux AppImage Build
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: '6.4.0'
+        modules: 'qt5compat qtmultimedia'
+
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake fuse libgl1-mesa-dev xorg-dev qt6-base-dev
+
+    - name: Build Project
+      run: |
+        mkdir build
+        cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release
+        make -j$(nproc)
+
+    - name: Ensure target properties
+      run: |
+        # In case windployqt was used, qt_add_executable WIN32 is ignored in Linux, but just making sure it builds.
+        ls -la build/
+
+    - name: Setup linuxdeployqt
+      run: |
+        wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
+        chmod a+x linuxdeployqt-continuous-x86_64.AppImage
+
+    - name: Create AppDir
+      run: |
+        mkdir -p AppDir/usr/bin
+        mkdir -p AppDir/usr/share/applications
+        mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
+        
+        # Copy compiled binary
+        cp build/AgenciaMed AppDir/usr/bin/
+        
+        # Create a simple .desktop file
+        cat <<EOF > AppDir/usr/share/applications/agenciamed.desktop
+        [Desktop Entry]
+        Name=AgenciaMed
+        Exec=AgenciaMed
+        Icon=agenciamed
+        Type=Application
+        Categories=Utility;
+        EOF
+        
+        # Create a dummy icon
+        touch AppDir/usr/share/icons/hicolor/256x256/apps/agenciamed.png
+
+    - name: Deploy Qt libraries and Create AppImage
+      run: |
+        export PATH="${{ env.Qt6_DIR }}/bin:$PATH"
+        export QMAKE="${{ env.Qt6_DIR }}/bin/qmake"
+        
+        # Disable version check for linuxdeployqt
+        export VERSION=1.0
+        ./linuxdeployqt-continuous-x86_64.AppImage AppDir/usr/share/applications/agenciamed.desktop -appimage -unsupported-allow-new-glibc
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: AgenciaMed-Linux-AppImage
+        path: '*AppImage'
