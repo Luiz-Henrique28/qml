@@ -70,6 +70,11 @@ jobs:
         export EXTRA_QT_PLUGINS="qml,quick,sql,sqldrivers"
         export QML_SOURCES_PATHS="qml"
         export QML_MODULES_PATHS="${{ env.Qt6_DIR }}/qml"
+        
+        # O plugin do Qt as vezes ignora o SQLite no Qt6, vamos forçar ele pra dentro da AppDir antes de fechar o zíper
+        mkdir -p AppDir/usr/plugins/sqldrivers
+        cp ${{ env.Qt6_DIR }}/plugins/sqldrivers/libqsqlite.so AppDir/usr/plugins/sqldrivers/ 2>/dev/null || true
+        
         ./linuxdeploy-x86_64.AppImage --appdir=AppDir -d AppDir/usr/share/applications/agenciamed.desktop --plugin qt --output appimage
 
     - name: Upload Artifact
