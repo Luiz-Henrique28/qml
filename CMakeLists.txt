@@ -36,3 +36,5 @@ target_link_libraries(AgenciaMed PRIVATE
     Qt6::Quick
     Qt6::Sql
 )
+
+set_target_properties(AgenciaMed PROPERTIES OUTPUT_NAME AgenciaMedApp)

@@ -47,13 +47,13 @@ jobs:
         mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
         
         # Copy compiled binary
-        cp build/AgenciaMed AppDir/usr/bin/
+        cp build/AgenciaMedApp AppDir/usr/bin/AgenciaMedApp
         
         # Create a simple .desktop file
         cat <<EOF > AppDir/usr/share/applications/agenciamed.desktop
         [Desktop Entry]
         Name=AgenciaMed
-        Exec=AgenciaMed
+        Exec=AgenciaMedApp
         Icon=agenciamed
         Type=Application
         Categories=Utility;
