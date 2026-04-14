@@ -35,10 +35,11 @@ jobs:
         # In case windployqt was used, qt_add_executable WIN32 is ignored in Linux, but just making sure it builds.
         ls -la build/
 
-    - name: Setup linuxdeployqt
+    - name: Setup linuxdeploy
       run: |
-        wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
-        chmod a+x linuxdeployqt-continuous-x86_64.AppImage
+        wget -c -nv "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
+        wget -c -nv "https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage"
+        chmod a+x linuxdeploy*.AppImage
 
     - name: Create AppDir
       run: |
@@ -66,10 +67,11 @@ jobs:
       run: |
         export PATH="${{ env.Qt6_DIR }}/bin:$PATH"
         export QMAKE="${{ env.Qt6_DIR }}/bin/qmake"
+        export EXTRA_QT_PLUGINS="qml,quick,sql"
+        export QML_SOURCES_PATHS="qml"
+        export QML_MODULES_PATHS="${{ env.Qt6_DIR }}/qml"
         
-        # Disable version check for linuxdeployqt
-        export VERSION=1.0
-        ./linuxdeployqt-continuous-x86_64.AppImage AppDir/usr/share/applications/agenciamed.desktop -appimage -unsupported-allow-new-glibc -qmldir=qml -always-overwrite -verbose=2
+        ./linuxdeploy-x86_64.AppImage --custom-apprun --appdir AppDir --plugin qt --output appimage
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
