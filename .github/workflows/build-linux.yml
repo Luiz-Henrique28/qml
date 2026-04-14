@@ -21,7 +21,7 @@ jobs:
     - name: Install Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential cmake fuse libgl1-mesa-dev xorg-dev qt6-base-dev
+        sudo apt-get install -y build-essential cmake fuse libgl1-mesa-dev xorg-dev qt6-base-dev imagemagick
 
     - name: Build Project
       run: |
@@ -59,8 +59,8 @@ jobs:
         Categories=Utility;
         EOF
         
-        # Create a dummy icon
-        touch AppDir/usr/share/icons/hicolor/256x256/apps/agenciamed.png
+        # Create a valid icon because linuxdeployqt crashes on 0-byte icons
+        convert -size 256x256 xc:transparent AppDir/usr/share/icons/hicolor/256x256/apps/agenciamed.png
 
     - name: Deploy Qt libraries and Create AppImage
       run: |
@@ -69,7 +69,7 @@ jobs:
         
         # Disable version check for linuxdeployqt
         export VERSION=1.0
-        ./linuxdeployqt-continuous-x86_64.AppImage AppDir/usr/share/applications/agenciamed.desktop -appimage -unsupported-allow-new-glibc
+        ./linuxdeployqt-continuous-x86_64.AppImage AppDir/usr/share/applications/agenciamed.desktop -appimage -unsupported-allow-new-glibc -qmldir=qml -always-overwrite -verbose=2
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
